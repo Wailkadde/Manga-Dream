@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفاصيل المانغا</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1 id="mangaTitle">📖 تحميل...</h1>
+    <img id="mangaCover" src="" alt="غلاف المانغا" width="200" />
+    <p id="mangaDescription"></p>
+    <h2>📜 الفصول:</h2>
+    <div id="chaptersList"></div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const mangaId = urlParams.get("id");
+
+        fetch(`https://api.mangadex.org/manga/${mangaId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("mangaTitle").innerText = data.data.attributes.title.en;
+                document.getElementById("mangaCover").src = `https://uploads.mangadex.org/covers/${mangaId}/.jpg`;
+                document.getElementById("mangaDescription").innerText = data.data.attributes.description.en;
+            });
+
+        fetch(`https://api.mangadex.org/manga/${mangaId}/feed`)
+            .then(response => response.json())
+            .then(data => {
+                const chaptersList = document.getElementById("chaptersList");
+                data.data.forEach(chapter => {
+                    const chapterElement = document.createElement("div");
+                    chapterElement.innerHTML = `<p>📖 الفصل ${chapter.attributes.chapter}</p>`;
+                    chapterElement.onclick = () => {
+                        window.location.href = `reader.html?id=${chapter.id}`;
+                    };
+                    chaptersList.appendChild(chapterElement);
+                });
+            });
+    </script>
+</body>
+</html>

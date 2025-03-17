@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قراءة الفصل</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>📖 قراءة الفصل</h1>
+    <div id="chapterImages"></div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const chapterId = urlParams.get("id");
+
+        fetch(`https://api.mangadex.org/at-home/server/${chapterId}`)
+            .then(response => response.json())
+            .then(data => {
+                const baseUrl = data.baseUrl;
+                const imagesDiv = document.getElementById("chapterImages");
+                
+                data.chapter.data.forEach(image => {
+                    const imgElement = document.createElement("img");
+                    imgElement.src = `${baseUrl}/data/${data.chapter.hash}/${image}`;
+                    imgElement.width = 300;
+                    imagesDiv.appendChild(imgElement);
+                });
+            });
+    </script>
+</body>
+</html>
