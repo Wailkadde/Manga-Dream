@@ -1,50 +1,39 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const mangaListContainer = document.querySelector(".manga-list");
+document.addEventListener("DOMContentLoaded", fetchMangaList);
 
-    async function fetchMangaList() {
-        try {
-            let response = await fetch("https://api.mangadex.org/manga?limit=10");
-            let data = await response.json();
-            console.log("بيانات المانغا:", data); // فحص البيانات
-            displayMangaList(data.data);
-        } catch (error) {
-            console.error("خطأ في جلب البيانات:", error);
-            mangaListContainer.innerHTML = "<p>فشل تحميل المانغا. تأكد من اتصالك بالإنترنت أو جرب لاحقًا.</p>";
-        }
+async function fetchMangaList() {
+    try {
+        let response = await fetch("https://api.jikan.moe/v4/top/manga");
+        let data = await response.json();
+        console.log("بيانات المانغا:", data); // تأكد من أن البيانات تُعرض في الكونسول
+        displayMangaList(data.data);
+    } catch (error) {
+        console.error("خطأ في جلب البيانات:", error);
+        document.getElementById("manga-list").innerHTML = "<p>فشل تحميل المانغا.</p>";
     }
+}
 
-    async function getCoverUrl(manga) {
-        let coverRel = manga.relationships.find(rel => rel.type === "cover_art");
-        if (!coverRel) return "https://via.placeholder.com/180x250"; // صورة افتراضية
-        
-        try {
-            let coverResponse = await fetch(`https://api.mangadex.org/cover/${coverRel.id}`);
-            let coverData = await coverResponse.json();
-            return `https://uploads.mangadex.org/covers/${manga.id}/${coverData.data.attributes.fileName}.256.jpg`;
-        } catch (error) {
-            console.error("خطأ في تحميل الغلاف:", error);
-            return "https://via.placeholder.com/180x250"; // صورة افتراضية
-        }
-    }
+function displayMangaList(mangaArray) {
+    let mangaListContainer = document.getElementById("manga-list");
+    mangaListContainer.innerHTML = ""; // تنظيف المحتوى القديم
 
-    async function displayMangaList(mangaArray) {
-        mangaListContainer.innerHTML = ""; // مسح المحتوى القديم
-        for (const manga of mangaArray) {
-            const mangaCard = document.createElement("div");
-            mangaCard.classList.add("manga-card");
+    mangaArray.forEach(manga => {
+        let mangaCard = document.createElement("div");
+        mangaCard.classList.add("manga-card");
 
-            const mangaImage = document.createElement("img");
-            mangaImage.src = await getCoverUrl(manga);
+        let mangaImage = document.createElement("img");
+        mangaImage.src = manga.images.jpg.image_url;
+        mangaImage.alt = manga.title;
 
-            const mangaTitle = document.createElement("div");
-            mangaTitle.classList.add("manga-title");
-            mangaTitle.textContent = manga.attributes.title.en || "عنوان غير متوفر";
+        let mangaTitle = document.createElement("h3");
+        mangaTitle.textContent = manga.title;
 
-            mangaCard.appendChild(mangaImage);
-            mangaCard.appendChild(mangaTitle);
-            mangaListContainer.appendChild(mangaCard);
-        }
-    }
+        let mangaRating = document.createElement("p");
+        mangaRating.textContent = `⭐ التقييم: ${manga.score || "غير متوفر"}`;
 
-    fetchMangaList();
-});
+        mangaCard.appendChild(mangaImage);
+        mangaCard.appendChild(mangaTitle);
+        mangaCard.appendChild(mangaRating);
+
+        mangaListContainer.appendChild(mangaCard);
+    });
+}
