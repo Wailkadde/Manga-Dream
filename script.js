@@ -13,21 +13,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function displayMangaList(mangaArray) {
         mangaListContainer.innerHTML = ""; // مسح المحتوى القديم
-        mangaArray.forEach(manga => {
+        mangaArray.forEach(async manga => {
             const mangaCard = document.createElement("div");
             mangaCard.classList.add("manga-card");
 
             const mangaImage = document.createElement("img");
-            if (manga.relationships.length > 0) {
-                const coverId = manga.relationships.find(rel => rel.type === "cover_art")?.id;
-                if (coverId) {
-                    mangaImage.src = `https://uploads.mangadex.org/covers/${manga.id}/${coverId}.jpg.256.jpg`;
-                } else {
-                    mangaImage.src = "https://via.placeholder.com/180x250"; // صورة افتراضية
+            let coverUrl = "https://via.placeholder.com/180x250"; // صورة افتراضية
+
+            // البحث عن الغلاف
+            const coverRel = manga.relationships.find(rel => rel.type === "cover_art");
+            if (coverRel) {
+                try {
+                    const coverResponse = await fetch(`https://api.mangadex.org/cover/${coverRel.id}`);
+                    const coverData = await coverResponse.json();
+                    coverUrl = `https://uploads.mangadex.org/covers/${manga.id}/${coverData.data.attributes.fileName}.256.jpg`;
+                } catch (err) {
+                    console.error("فشل تحميل الغلاف:", err);
                 }
-            } else {
-                mangaImage.src = "https://via.placeholder.com/180x250"; // صورة افتراضية
             }
+
+            mangaImage.src = coverUrl;
 
             const mangaTitle = document.createElement("div");
             mangaTitle.classList.add("manga-title");
